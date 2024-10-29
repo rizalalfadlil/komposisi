@@ -1,101 +1,223 @@
-import Image from "next/image";
+"use client";
+import { getAllData, saveAllData } from "@/backend/komposisi";
+import React, { useEffect, useState } from "react";
 
-export default function Home() {
+export default function Page() {
+  const [data, setData] = useState([
+    {
+      id: "1",
+      produk: "platinum",
+      komposisi: {
+        admin: [1, 1, 4],
+        ff: [2, 3, 5],
+      },
+    },
+    {
+      id: "2",
+      produk: "gold",
+      komposisi: {
+        admin: [3, 6, 9],
+        ff: [9, 7, 10],
+      },
+    },
+    {
+      id: "3",
+      produk: "plus",
+      komposisi: {
+        admin: [2, 6, 11],
+        ff: [4, 9, 15],
+      },
+    },
+  ]);
+
+  useEffect(() => {
+    getData();
+  }, []);
+  const getData = async () => {
+    const res = await getAllData();
+    setData(res);
+  };
+
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editField, setEditField] = useState<{
+    produk: string;
+    admin: number[];
+    ff: number[];
+  } | null>(null);
+  const handleEditClick = (index: number) => {
+    if (editIndex === null) {
+      setEditIndex(index);
+      setEditField({
+        produk: data[index].produk,
+        admin: [...data[index].komposisi.admin],
+        ff: [...data[index].komposisi.ff],
+      });
+    } else {
+      alert("simpan terlebih dahulu");
+    }
+  };
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string,
+    idx: number
+  ) => {
+    if (editField) {
+      const updatedField = { ...editField };
+      if (field === "produk") {
+        updatedField.produk = e.target.value;
+      } else if (field === "admin") {
+        updatedField.admin[idx] = parseInt(e.target.value) || 0;
+      } else if (field === "ff") {
+        updatedField.ff[idx] = parseInt(e.target.value) || 0;
+      }
+      setEditField(updatedField);
+    }
+  };
+
+  const handleSave = async () => {
+    if (editIndex !== null && editField) {
+      const updatedData = [...data];
+      updatedData[editIndex] = {
+        id: data[editIndex].id,
+        produk: editField.produk,
+        komposisi: {
+          admin: editField.admin,
+          ff: editField.ff,
+        },
+      };
+      setData(updatedData);
+      await saveAllData(updatedData);
+      getData();
+      setEditIndex(null);
+      console.log("Data tersimpan:", updatedData);
+    }
+  };
+
+  // Menentukan apakah tombol save harus disabled
+  const isSaveDisabled =
+    !editField ||
+    !editField.produk ||
+    editField.admin.some((value) => value === 0) ||
+    editField.ff.some((value) => value === 0) ||
+    editIndex === null;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="p-4">
+      <p className="text-2xl w-full mb-4 font-bold">Biaya Komposisi</p>
+      <div className="w-full min-w-80 flex justify-end items-center gap-4 mb-4">
+        <button
+          onClick={handleSave}
+          disabled={isSaveDisabled}
+          className="p-2 px-8 disabled:bg-neutral-800 rounded bg-blue-800 text-white"
+        >
+          Save
+        </button>
+        {editIndex !== null && (
+          <button
+            onClick={() => setEditIndex(null)}
+            className="p-2 px-8 bg-neutral-800 rounded text-white"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            Cancel
+          </button>
+        )}
+      </div>
+      <table className="w-full min-w-80">
+        <thead>
+          <tr>
+            <th className="border p-4" rowSpan={3}>
+              no
+            </th>
+            <th className="border p-4" rowSpan={3}>
+              produk
+            </th>
+            <th className="border p-4" rowSpan={3}>
+              komposisi
+            </th>
+            <th className="border p-4" colSpan={3}>
+              usia
+            </th>
+          </tr>
+          <tr>
+            <th className="border p-4">17</th>
+            <th className="border p-4">40</th>
+            <th className="border p-4">70</th>
+          </tr>
+          <tr>
+            <th className="border p-4">36</th>
+            <th className="border p-4">48</th>
+            <th className="border p-4">72</th>
+          </tr>
+        </thead>
+        <tbody className="text-center">
+          {data.map((d, i) => (
+            <React.Fragment key={i}>
+              <tr>
+                <td rowSpan={2} className="border p-4">
+                  {i + 1}
+                </td>
+                <td rowSpan={2} className="border p-4">
+                  {editIndex === i ? (
+                    <input
+                      value={editField?.produk || ""}
+                      onChange={(e) => handleInputChange(e, "produk", 0)}
+                      className="text-center w-full "
+                    />
+                  ) : (
+                    <span
+                      onClick={() => handleEditClick(i)}
+                      className="cursor-pointer hover:bg-neutral-800"
+                    >
+                      {d.produk}
+                    </span>
+                  )}
+                </td>
+                <td className="border p-4">biaya admin</td>
+                {d.komposisi.admin.map((value, idx) => (
+                  <td key={idx} className="border text-center p-4">
+                    {editIndex === i ? (
+                      <input
+                        type="number"
+                        value={editField?.admin[idx] || 0}
+                        onChange={(e) => handleInputChange(e, "admin", idx)}
+                        className=" text-center w-full"
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer hover:bg-neutral-800"
+                        onClick={() => !editIndex && handleEditClick(i)}
+                      >
+                        {value}%
+                      </span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="border p-4">biaya ff</td>
+                {d.komposisi.ff.map((value, idx) => (
+                  <td key={idx} className="border text-center p-4">
+                    {editIndex === i ? (
+                      <input
+                        type="number"
+                        value={editField?.ff[idx] || 0}
+                        onChange={(e) => handleInputChange(e, "ff", idx)}
+                        className=" text-center w-full"
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer hover:bg-neutral-800"
+                        onClick={() => handleEditClick(i)}
+                      >
+                        {value}%
+                      </span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

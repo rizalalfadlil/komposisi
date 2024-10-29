@@ -19,3 +19,6 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+input{
+  @apply bg-transparent border-b focus:ring-0 focus:outline-0
+}
