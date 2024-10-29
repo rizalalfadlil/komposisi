@@ -1,40 +1,15 @@
 "use client";
-import { getAllData, saveAllData } from "@/backend/komposisi";
+import { DataType, getAllData, saveAllData } from "@/backend/komposisi";
 import React, { useEffect, useState } from "react";
 
 export default function Page() {
-  const [data, setData] = useState([
-    {
-      id: "1",
-      produk: "platinum",
-      komposisi: {
-        admin: [1, 1, 4],
-        ff: [2, 3, 5],
-      },
-    },
-    {
-      id: "2",
-      produk: "gold",
-      komposisi: {
-        admin: [3, 6, 9],
-        ff: [9, 7, 10],
-      },
-    },
-    {
-      id: "3",
-      produk: "plus",
-      komposisi: {
-        admin: [2, 6, 11],
-        ff: [4, 9, 15],
-      },
-    },
-  ]);
+  const [data, setData] = useState<DataType[]>([]);
 
   useEffect(() => {
     getData();
   }, []);
   const getData = async () => {
-    const res = await getAllData();
+    const res:any = await getAllData();
     setData(res);
   };
 

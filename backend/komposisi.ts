@@ -4,7 +4,7 @@ import { firebaseConfig } from "./firebase";
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
-type DataType = {
+export type DataType = {
   id: string;
   produk: string;
   komposisi: {
